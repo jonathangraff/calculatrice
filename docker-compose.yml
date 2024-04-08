@@ -1,0 +1,9 @@
+version: "1"
+services:
+  api-service:
+    container_name: calc-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '80:80'
