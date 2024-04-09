@@ -2,6 +2,7 @@ from app.errors import LastCaracterNotOperation, TooManyOperands, NotEnoughOpera
 
 import csv
 import sqlite3
+import os
 
 
 operations = {
@@ -63,6 +64,9 @@ def _basic_calculation(x: float, y: float, operation: str) -> float:
 
 def _store_result_in_bdd(calculation, result):
 
+    repertoire = 'data'
+    if not os.path.exists(repertoire):
+        os.mkdir(repertoire)
     conn = sqlite3.connect('data/calculation_results.db')
     try:
         cursor = conn.cursor()
