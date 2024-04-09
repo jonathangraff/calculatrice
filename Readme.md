@@ -14,4 +14,4 @@ Pour la route get_data :
 Le fichier csv à récupérer contenant les calculs présents dans la base de données se trouve dans le container.
 - récupérer l'ID du container : sudo docker ps 
 - se placer dans le container : docker exec -it {id_du_container} sh
-- lire le fichier : cat data.csv
+- lire le fichier : cat data/data.csv
