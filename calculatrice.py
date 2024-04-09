@@ -12,6 +12,8 @@ operations = {
     "/": float.__truediv__,
 }
 
+data_directory = 'data'
+
 
 def calculate_from_str(calculation: str) -> float:
     """
@@ -64,10 +66,10 @@ def _basic_calculation(x: float, y: float, operation: str) -> float:
 
 def _store_result_in_bdd(calculation, result):
 
-    repertoire = 'data'
-    if not os.path.exists(repertoire):
-        os.mkdir(repertoire)
-    conn = sqlite3.connect('data/calculation_results.db')
+    if not os.path.exists(data_directory):
+        os.mkdir(data_directory)
+
+    conn = sqlite3.connect(data_directory + '/calculation_results.db')
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -89,7 +91,7 @@ def _store_result_in_bdd(calculation, result):
 
 
 def _get_data_rows_from_bdd():
-    conn = sqlite3.connect('data/calculation_results.db')
+    conn = sqlite3.connect(data_directory + '/calculation_results.db')
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -107,7 +109,7 @@ def create_csv_with_data():
     :return: None
     """
     rows = _get_data_rows_from_bdd()
-    with open("data/data.csv", 'w', newline='') as file:
+    with open(data_directory + "/data.csv", 'w', newline='') as file:
         writer = csv.writer(file)
         for row in rows:
             writer.writerow(row)
