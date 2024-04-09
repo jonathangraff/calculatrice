@@ -8,7 +8,7 @@ Aller sur le Swagger en local :
  http://0.0.0.0:80/docs
 
 Pour la route 'calculate' :
-- Mettre {'calculation' : "4 1 2 + * 2 - 5/"} dans le body de la request par exemple
+- Mettre {'calculation' : "4 1 2 + * 2 - 5 /"} dans le body de la request par exemple
 
 Pour la route get_data : 
 Le fichier csv à récupérer contenant les calculs présents dans la base de données se trouve dans le container.
