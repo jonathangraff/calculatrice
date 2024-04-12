@@ -1,4 +1,4 @@
-from app.errors import LastCaracterNotOperation, TooManyOperands, NotEnoughOperands
+from app.errors import StringInvalid
 
 import csv
 import sqlite3
@@ -21,47 +21,33 @@ def calculate_from_str(calculation: str) -> float:
     :param calculation: the string, each value being separated by a space
     :return: a float, the computation made
     """
-    result = _calculate_from_list(calculation.split())
+    calculation_list = calculation.split()
+    for index, car in enumerate(calculation_list):
+        if car not in operations:
+            calculation_list[index] = float(car)
+    try:
+        result = _calculate_from_list(calculation_list)
+    except StringInvalid:
+        raise StringInvalid(calculation)
     _store_result_in_bdd(calculation, result)
     return result
 
 
 def _calculate_from_list(calculation: list) -> float:
 
-    last_character = calculation[-1]
-    if last_character not in operations:
-        if len(calculation) == 1:
-            return float(last_character)
-        raise LastCaracterNotOperation(last_character)
-
-    index_second_operand = _get_index_operand(calculation[:-1], last_character)
-    second_operand = calculation[index_second_operand:-1]
-    first_operand = calculation[:index_second_operand]
-    if not first_operand:
-        raise NotEnoughOperands(' '.join(calculation))
-    if _get_index_operand(first_operand, last_character) != 0:
-        raise TooManyOperands(' '.join(calculation))
-    return _basic_calculation(_calculate_from_list(first_operand), _calculate_from_list(second_operand), last_character)
-
-
-def _get_index_operand(calculation: list, last_operation) -> int:
-
-    if not calculation:
-        raise NotEnoughOperands(' '.join(calculation+[last_operation]))
-    nb_characters = 1
-    index = len(calculation) - 1
-    while nb_characters != 0:
-        if calculation[index] in operations:
-            nb_characters += 1
+    pile = calculation[:2]
+    for i in range(2, len(calculation)):
+        if calculation[i] in operations:
+            try:
+                x, y = pile.pop(), pile.pop()
+                pile.append(operations[calculation[i]](y, x))
+            except IndexError:
+                raise StringInvalid()
         else:
-            nb_characters -= 1
-        index -= 1
-    return index + 1
-
-
-def _basic_calculation(x: float, y: float, operation: str) -> float:
-
-    return operations[operation](x, y)
+            pile.append(calculation[i])
+    if len(pile) != 1 or pile[0] in operations:
+        raise StringInvalid()
+    return pile[0]
 
 
 def _store_result_in_bdd(calculation, result):
