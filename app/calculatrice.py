@@ -50,7 +50,7 @@ def _calculate_from_list(calculation: list) -> float:
     return pile[0]
 
 
-def _store_result_in_bdd(calculation, result):
+def _store_result_in_bdd(calculation: str, result: float) -> None:
 
     if not os.path.exists(data_directory):
         os.mkdir(data_directory)
@@ -76,7 +76,7 @@ def _store_result_in_bdd(calculation, result):
         conn.close()
 
 
-def _get_data_rows_from_bdd():
+def _get_data_rows_from_bdd() -> list[tuple[str, float]]:
     conn = sqlite3.connect(data_directory + '/calculation_results.db')
     try:
         cursor = conn.cursor()
@@ -89,7 +89,7 @@ def _get_data_rows_from_bdd():
     return rows
 
 
-def create_csv_with_data():
+def create_csv_with_data() -> None:
     """
     This function creates a cvs file named 'data.csv'
     :return: None

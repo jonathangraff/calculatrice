@@ -8,7 +8,7 @@ app = FastAPI()
 
 
 @app.get("/get_data")
-async def get_data():
+async def get_data() -> None:
     create_csv_with_data()
 
 
