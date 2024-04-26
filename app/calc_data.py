@@ -1,36 +1,32 @@
+from models.calculation import Calculation
+
 import csv
-import sqlite3
 import os
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 data_directory = 'data'
+database_name = 'calculation_results.db'
+database_path = '/'.join([data_directory, database_name])
+csv_data_name = 'data.csv'
+csv_data_path = '/'.join([data_directory, csv_data_name])
 
 
 def store_result_in_bdd(calculation: str, result: float) -> None:
-
     if not os.path.exists(data_directory):
         os.mkdir(data_directory)
 
-    conn = sqlite3.connect(data_directory + '/calculation_results.db')
-    try:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS calculations(
-                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-                 calculation TEXT,
-                 result FLOAT
-            )
-            """
-        )
-        cursor.execute(
-            """INSERT INTO calculations(calculation, result) VALUES(?, ?)""",
-            (calculation, result)
-        )
-        conn.commit()
-    finally:
-        conn.close()
+    engine = create_engine('sqlite://' + database_path)
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
+    try:
+        calculation = Calculation(calculation=calculation, result=result)
+        session.add(calculation)
+        session.commit()
+    finally:
+        session.close()
+        engine.dispose()
 
 def create_csv_with_data() -> None:
     """
@@ -38,20 +34,21 @@ def create_csv_with_data() -> None:
     :return: None
     """
     rows = _get_data_rows_from_bdd()
-    with open(data_directory + "/data.csv", 'w', newline='') as file:
+    with open(data_directory + csv_data_name, 'w', newline='') as file:
         writer = csv.writer(file)
         for row in rows:
             writer.writerow(row)
 
 
-def _get_data_rows_from_bdd() -> list[tuple[str, float]]:
-    conn = sqlite3.connect(data_directory + '/calculation_results.db')
+def _get_data_rows_from_bdd() -> list[type(Calculation)]:
+
+    engine = create_engine('sqlite://' + database_path)
+    Session = sessionmaker(bind=engine)
+    session = Session()
     try:
-        cursor = conn.cursor()
-        cursor.execute(
-            """SELECT * FROM calculations"""
-        )
-        rows = cursor.fetchall()
+        query = session.query(Calculation)
+        rows = query.all()
     finally:
-        conn.close()
+        session.close()
+        engine.dispose()
     return rows

@@ -1,4 +1,5 @@
-from app.calculatrice import calculate_from_str, create_csv_with_data
+from app.calculatrice import calculate_from_str
+from app.calc_data import create_csv_with_data
 from app.model import Calculation
 
 from fastapi import FastAPI
