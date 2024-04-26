@@ -1,8 +1,5 @@
-from app.errors import StringInvalid
-
-import csv
-import sqlite3
-import os
+from app.errors import InvalidString, InvalidCharacter
+from app.calc_data import store_result_in_bdd
 
 
 operations = {
@@ -12,8 +9,6 @@ operations = {
     "/": float.__truediv__,
 }
 
-data_directory = 'data'
-
 
 def calculate_from_str(calculation: str) -> float:
     """
@@ -22,14 +17,20 @@ def calculate_from_str(calculation: str) -> float:
     :return: a float, the computation made
     """
     calculation_list = calculation.split()
-    for index, car in enumerate(calculation_list):
-        if car not in operations:
-            calculation_list[index] = float(car)
+    calculation_list_with_floats = []
+    for car in calculation_list:
+        try:
+            calculation_list_with_floats.append(float(car))
+        except ValueError:
+            if car not in operations:
+                raise InvalidCharacter(car)
+            calculation_list_with_floats.append(car)
+
     try:
-        result = _calculate_from_list(calculation_list)
-    except StringInvalid:
-        raise StringInvalid(calculation)
-    _store_result_in_bdd(calculation, result)
+        result = _calculate_from_list(calculation_list_with_floats)
+    except InvalidString:
+        raise InvalidString(calculation)
+    store_result_in_bdd(calculation, result)
     return result
 
 
@@ -42,60 +43,9 @@ def _calculate_from_list(calculation: list) -> float:
                 x, y = pile.pop(), pile.pop()
                 pile.append(operations[calculation[i]](y, x))
             except IndexError:
-                raise StringInvalid()
+                raise InvalidString()
         else:
             pile.append(calculation[i])
     if len(pile) != 1 or pile[0] in operations:
-        raise StringInvalid()
+        raise InvalidString()
     return pile[0]
-
-
-def _store_result_in_bdd(calculation: str, result: float) -> None:
-
-    if not os.path.exists(data_directory):
-        os.mkdir(data_directory)
-
-    conn = sqlite3.connect(data_directory + '/calculation_results.db')
-    try:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS calculations(
-                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-                 calculation TEXT,
-                 result FLOAT
-            )
-            """
-        )
-        cursor.execute(
-            """INSERT INTO calculations(calculation, result) VALUES(?, ?)""",
-            (calculation, result)
-        )
-        conn.commit()
-    finally:
-        conn.close()
-
-
-def _get_data_rows_from_bdd() -> list[tuple[str, float]]:
-    conn = sqlite3.connect(data_directory + '/calculation_results.db')
-    try:
-        cursor = conn.cursor()
-        cursor.execute(
-            """SELECT * FROM calculations"""
-        )
-        rows = cursor.fetchall()
-    finally:
-        conn.close()
-    return rows
-
-
-def create_csv_with_data() -> None:
-    """
-    This function creates a cvs file named 'data.csv'
-    :return: None
-    """
-    rows = _get_data_rows_from_bdd()
-    with open(data_directory + "/data.csv", 'w', newline='') as file:
-        writer = csv.writer(file)
-        for row in rows:
-            writer.writerow(row)
