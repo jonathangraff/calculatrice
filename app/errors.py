@@ -16,3 +16,13 @@ class InvalidCharacter(Exception):
 
     def __str__(self):
         return self.message
+
+
+class DivisionByZero(Exception):
+
+    def __init__(self, calculation=''):
+        self.message = f"The string {calculation} contains a division by 0."
+        super().__init__()
+
+    def __str__(self):
+        return self.message

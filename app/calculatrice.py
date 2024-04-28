@@ -1,4 +1,4 @@
-from app.errors import InvalidString, InvalidCharacter
+from app.errors import InvalidString, InvalidCharacter, DivisionByZero
 from app.calc_data import store_result_in_bdd
 
 
@@ -16,6 +16,20 @@ def calculate_from_str(calculation: str) -> float:
     :param calculation: the string, each value being separated by a space
     :return: a float, the computation made
     """
+
+    calculation_list = _transform_calculation_string_into_list(calculation)
+    try:
+        result = _calculate_from_list(calculation_list)
+    except InvalidString:
+        raise InvalidString(calculation)
+    except DivisionByZero:
+        raise DivisionByZero(calculation)
+    store_result_in_bdd(calculation, result)
+    return result
+
+
+def _transform_calculation_string_into_list(calculation: str) -> list[float | str]:
+
     calculation_list = calculation.split()
     calculation_list_with_floats = []
     for car in calculation_list:
@@ -25,13 +39,7 @@ def calculate_from_str(calculation: str) -> float:
             if car not in operations:
                 raise InvalidCharacter(car)
             calculation_list_with_floats.append(car)
-
-    try:
-        result = _calculate_from_list(calculation_list_with_floats)
-    except InvalidString:
-        raise InvalidString(calculation)
-    store_result_in_bdd(calculation, result)
-    return result
+    return calculation_list_with_floats
 
 
 def _calculate_from_list(calculation: list) -> float:
@@ -44,6 +52,8 @@ def _calculate_from_list(calculation: list) -> float:
                 pile.append(operations[calculation[i]](y, x))
             except IndexError:
                 raise InvalidString()
+            except ZeroDivisionError:
+                raise DivisionByZero()
         else:
             pile.append(calculation[i])
     if len(pile) != 1 or pile[0] in operations:

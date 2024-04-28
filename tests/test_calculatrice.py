@@ -1,5 +1,5 @@
 from app.calculatrice import calculate_from_str
-from app.errors import StringInvalid
+from app.errors import InvalidString, InvalidCharacter, DivisionByZero
 import pytest
 
 
@@ -18,19 +18,42 @@ def test_calculate_works(calculation, answer):
     assert calculate_from_str(calculation) == answer
 
 
-def test_error_too_many_operand():
-    with pytest.raises(StringInvalid):
-        calculate_from_str("1 2 3 +")
-
-
 @pytest.mark.parametrize(
     "calculation",
     (
         "1 +",
         "+",
         "3 2 + *",
+        "1 2 3 +",
     )
 )
-def test_error_not_enough_operand(calculation):
-    with pytest.raises(StringInvalid):
+def test_error_invalid_string(calculation):
+    with pytest.raises(InvalidString):
+        calculate_from_str(calculation)
+
+
+@pytest.mark.parametrize(
+    "calculation",
+    (
+        "1 !",
+        "z",
+        "ab -1 + ",
+        "1 2 x +",
+    )
+)
+def test_error_invalid_character(calculation):
+    with pytest.raises(InvalidCharacter):
+        calculate_from_str(calculation)
+
+
+@pytest.mark.parametrize(
+    "calculation",
+    (
+        "1 0 /",
+        "2 3 3 - /",
+        "1 2 -2 + / 3 +",
+    )
+)
+def test_error_with_division_by_0(calculation):
+    with pytest.raises(DivisionByZero):
         calculate_from_str(calculation)

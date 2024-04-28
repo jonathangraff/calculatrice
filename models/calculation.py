@@ -1,7 +1,9 @@
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Column, Integer, String, Float
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Calculation(Base):
@@ -9,3 +11,6 @@ class Calculation(Base):
     id = Column(Integer, primary_key=True)
     calculation = Column(String)
     result = Column(Float)
+
+    def __repr__(self) -> str:
+        return f"Calculation(id={self.id}, calculation={self.calculation}, result={self.result})"
