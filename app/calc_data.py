@@ -40,10 +40,7 @@ def create_csv_with_data() -> None:
 
 def _get_data_tuples_from_bdd() -> list[tuple[int, str, float]]:
     rows = _get_data_rows_from_bdd()
-    tuples = []
-    for row in rows:
-        tuples.append((row.id, row.calculation, row.result))
-    return tuples
+    return [row.to_tuple() for row in rows]
 
 
 def _get_data_rows_from_bdd() -> list[type(Calculation)]:

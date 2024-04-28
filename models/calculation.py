@@ -14,3 +14,6 @@ class Calculation(Base):
 
     def __repr__(self) -> str:
         return f"Calculation(id={self.id}, calculation={self.calculation}, result={self.result})"
+
+    def to_tuple(self) -> tuple[int, str, float]:
+        return (self.id, self.calculation, self.result)
