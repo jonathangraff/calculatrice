@@ -13,6 +13,12 @@ csv_data_path = '/'.join([data_directory, csv_data_name])
 
 
 def store_result_in_bdd(calculation: str, result: float) -> None:
+    """
+    This function add a line in the table "calculation" with the calculation made and the result
+    :param calculation: str
+    :param result: float
+    :return: None
+    """
     if not os.path.exists(data_directory):
         os.mkdir(data_directory)
 
@@ -39,13 +45,8 @@ def create_csv_with_data() -> None:
 
 
 def _get_data_tuples_from_bdd() -> list[tuple[int, str, float]]:
-    rows = _get_data_rows_from_bdd()
-    return [row.to_tuple() for row in rows]
-
-
-def _get_data_rows_from_bdd() -> list[type(Calculation)]:
     engine = create_engine('sqlite:///' + database_path)
     with Session(engine) as session:
         query = session.query(Calculation)
         rows = query.all()
-    return rows
+    return [row.to_tuple() for row in rows]
